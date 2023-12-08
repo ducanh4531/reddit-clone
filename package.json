@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "apollo-server-core": "^3.13.0"
+  }
+}
