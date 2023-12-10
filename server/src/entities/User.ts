@@ -10,11 +10,11 @@ import {
 @ObjectType()
 @Entity() // db table
 export class User extends BaseEntity {
-	@Field()
+	@Field((_type) => ID)
 	@PrimaryGeneratedColumn()
 	id!: number
 
-	@Field((_type) => ID)
+	@Field()
 	@Column({ unique: true })
 	username!: string
 

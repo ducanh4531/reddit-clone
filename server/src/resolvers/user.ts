@@ -59,7 +59,7 @@ export class UserResolver {
 				password: hashedPassword
 			})
 
-			newUser = await User.save(newUser)
+			await newUser.save()
 
 			req.session.userId = newUser.id
 
