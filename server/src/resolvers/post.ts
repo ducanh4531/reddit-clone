@@ -1,6 +1,7 @@
 import { Arg, ID, Mutation, Query, Resolver } from 'type-graphql'
 import { Post } from '../entities/Post'
 import { PostMutationResponse } from '../types/PostMutationResponse'
+import { UpdatePostInput } from '../types/UpdatePostInput'
 import { CreatePostInput } from '../types/createPostInput'
 import { validateCreatePostInput } from '../utils/validateCreatePostInput'
 
@@ -46,15 +47,90 @@ export class PostResolver {
 		}
 	}
 
-	@Query((_return) => [Post])
-	async posts(): Promise<Array<Post>> {
-		return Post.find()
+	@Query((_return) => [Post], { nullable: true })
+	async posts(): Promise<Array<Post> | null> {
+		try {
+			return await Post.find()
+		} catch (error) {
+			return null
+		}
 	}
 
 	@Query((_return) => Post, { nullable: true })
 	async post(@Arg('id', (_type) => ID) id: number): Promise<Post | null> {
-		const existingPost = await Post.findOne({ where: { id } })
+		try {
+			const post = await Post.findOne({ where: { id } })
+			return post
+		} catch (error) {
+			return null
+		}
+	}
 
-		return existingPost
+	@Mutation((_return) => PostMutationResponse)
+	async updatePost(
+		@Arg('updatePostInput') updatePostInput: UpdatePostInput
+	): Promise<PostMutationResponse> {
+		try {
+			const { id, title, body } = updatePostInput
+
+			const existingPost = await Post.findOne({ where: { id } })
+
+			if (!existingPost)
+				return {
+					code: 400,
+					success: false,
+					message: 'Post not found'
+				}
+
+			existingPost.title = title
+			existingPost.body = body
+
+			await existingPost.save()
+
+			return {
+				code: 200,
+				success: true,
+				message: 'Post updated successfully',
+				post: existingPost
+			}
+		} catch (error) {
+			console.log(error)
+			return {
+				code: 500,
+				success: false,
+				message: `Internal server error ${error.message}`
+			}
+		}
+	}
+
+	@Mutation((_return) => PostMutationResponse)
+	async deletePost(
+		@Arg('id', (_type) => ID) id: number
+	): Promise<PostMutationResponse> {
+		try {
+			const existingPost = await Post.findOne({ where: { id } })
+
+			if (!existingPost) {
+				return {
+					code: 400,
+					success: false,
+					message: 'Post not found'
+				}
+			}
+
+			await Post.delete({ id })
+
+			return {
+				code: 200,
+				success: true,
+				message: 'Post deleted successfully'
+			}
+		} catch (error) {
+			return {
+				code: 500,
+				success: false,
+				message: `Internal server error ${error.message}`
+			}
+		}
 	}
 }
