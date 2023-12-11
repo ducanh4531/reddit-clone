@@ -1,13 +1,15 @@
-import { Arg, ID, Mutation, Query, Resolver } from 'type-graphql'
+import { Arg, ID, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql'
 import { Post } from '../entities/Post'
+import { checkAuth } from '../middleware/checkAuth'
+import { CreatePostInput } from '../types/CreatePostInput'
 import { PostMutationResponse } from '../types/PostMutationResponse'
 import { UpdatePostInput } from '../types/UpdatePostInput'
-import { CreatePostInput } from '../types/createPostInput'
 import { validateCreatePostInput } from '../utils/validateCreatePostInput'
 
 @Resolver()
 export class PostResolver {
 	@Mutation((_return) => PostMutationResponse)
+	@UseMiddleware(checkAuth)
 	async createPost(
 		@Arg('createPostInput') createPostInput: CreatePostInput
 	): Promise<PostMutationResponse> {
@@ -67,6 +69,7 @@ export class PostResolver {
 	}
 
 	@Mutation((_return) => PostMutationResponse)
+	@UseMiddleware(checkAuth)
 	async updatePost(
 		@Arg('updatePostInput') updatePostInput: UpdatePostInput
 	): Promise<PostMutationResponse> {
@@ -104,6 +107,7 @@ export class PostResolver {
 	}
 
 	@Mutation((_return) => PostMutationResponse)
+	@UseMiddleware(checkAuth)
 	async deletePost(
 		@Arg('id', (_type) => ID) id: number
 	): Promise<PostMutationResponse> {
@@ -129,7 +133,7 @@ export class PostResolver {
 			return {
 				code: 500,
 				success: false,
-				message: `Internal server error ${error.message}`
+				message: `Internal server error: ${error.message}`
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-import { CreatePostInput } from '../types/createPostInput'
+import { CreatePostInput } from '../types/CreatePostInput'
 
 export const validateCreatePostInput = ({ title, body }: CreatePostInput) => {
 	if (title.length <= 2) {
