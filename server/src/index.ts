@@ -2,6 +2,7 @@ require('dotenv').config()
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 import { ApolloServer } from 'apollo-server-express'
 import MongoStore from 'connect-mongo'
+import cors from 'cors'
 import express from 'express'
 import session from 'express-session'
 import mongoose from 'mongoose'
@@ -33,6 +34,13 @@ const main = async () => {
 	await dataSource.initialize()
 
 	const app = express()
+
+	app.use(
+		cors({
+			origin: 'http://localhost:3000',
+			credentials: true
+		})
+	)
 
 	// Session/Cookie store
 	await mongoose.connect(mongoUrl)

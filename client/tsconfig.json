@@ -5,6 +5,7 @@
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
+		"noImplicitThis": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
