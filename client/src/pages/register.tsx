@@ -1,10 +1,12 @@
 import { useMutation } from '@apollo/client'
 import { Box, Button } from '@chakra-ui/react'
 import { Form, Formik, FormikHelpers } from 'formik'
+import { useRouter } from 'next/navigation'
 import InputField from '../components/InputField'
 import Wrapper from '../components/Wrapper'
 import { graphql } from '../gql'
 import { RegisterInput } from '../gql/graphql'
+import { mapFieldErrors } from '../helpers/mapFieldErrors'
 
 // prettier-ignore
 const registerMutation = graphql(`mutation Register($registerInput: RegisterInput!) {\n  register(registerInput: $registerInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}`)
@@ -18,6 +20,7 @@ const Register = () => {
 
 	const [registerUser, { loading: _registerUserLoading, data, error }] =
 		useMutation(registerMutation)
+	const router = useRouter()
 
 	const handleRegisterUser = async (
 		values: RegisterInput,
@@ -26,12 +29,15 @@ const Register = () => {
 		const response = await registerUser({
 			variables: { registerInput: values }
 		})
-		actions.resetForm()
 
 		console.log('RESPONSE', response)
 
-		if (response.data?.register.code === 200) {
-			console.log('OK')
+		if (response.data?.register.errors) {
+			console.log('ERROR OCCURRED')
+			actions.setErrors(mapFieldErrors(response.data.register.errors))
+		} else if (response.data?.register.user) {
+			router.push('/')
+			actions.resetForm()
 		}
 	}
 
