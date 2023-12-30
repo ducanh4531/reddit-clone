@@ -125,7 +125,7 @@ export class UserResolver {
 					errors: [
 						{
 							field: 'password',
-							message: 'Password incorrect'
+							message: 'Password is incorrect'
 						}
 					]
 				}

@@ -4,12 +4,11 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { useRouter } from 'next/navigation'
 import InputField from '../components/InputField'
 import Wrapper from '../components/Wrapper'
-import { graphql } from '../gql'
-import { LoginInput } from '../gql/graphql'
+import { FragmentType, useFragment } from '../gql'
+import { FieldError, LoginInput } from '../gql/graphql'
+import { UserMutationResponseFragment } from '../graphql-client/fragments/userMutationResponse'
+import { loginMutationDocument } from '../graphql-client/mutations/login'
 import { mapFieldErrors } from '../helpers/mapFieldErrors'
-
-// prettier-ignore
-const loginMutation = graphql(`mutation Login($loginInput: LoginInput!) {\n  login(loginInput: $loginInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}`)
 
 const Login = () => {
 	const initialValues = {
@@ -17,24 +16,37 @@ const Login = () => {
 		password: ''
 	}
 
-	const [loginUser, { loading: _loginUserLoading, data, error }] =
-		useMutation(loginMutation)
 	const router = useRouter()
+	const [loginUser, { loading: _loginUserLoading, data, error }] =
+		useMutation(loginMutationDocument)
+	const loginResponse = useFragment(
+		UserMutationResponseFragment,
+		data?.login as FragmentType<typeof UserMutationResponseFragment>
+	)
 
 	const handleLoginUser = async (
 		values: LoginInput,
 		actions: FormikHelpers<LoginInput>
 	) => {
-		const response = await loginUser({
+		const { data: dataLogin } = await loginUser({
 			variables: { loginInput: values }
 		})
 
-		console.log('RESPONSE', response)
+		const loginResponse = useFragment(
+			UserMutationResponseFragment,
+			dataLogin?.login as FragmentType<
+				typeof UserMutationResponseFragment
+			>
+		)
 
-		if (response.data?.login.errors) {
+		console.log('RESPONSE', loginResponse)
+
+		if (loginResponse.errors) {
 			console.log('ERROR OCCURRED')
-			actions.setErrors(mapFieldErrors(response.data.login.errors))
-		} else if (response.data?.login.user) {
+			actions.setErrors(
+				mapFieldErrors(loginResponse.errors as Array<FieldError>)
+			)
+		} else if (loginResponse.user) {
 			router.push('/')
 			actions.resetForm()
 		}
@@ -42,8 +54,8 @@ const Login = () => {
 
 	return (
 		<Wrapper>
-			{error && <p>Failed to login</p>}
-			{data && data.login.success && (
+			{error && <p>Failed to login. Internal server error</p>}
+			{loginResponse && loginResponse.success && (
 				<p>Logged in successfully {JSON.stringify(data)}</p>
 			)}
 			<Formik onSubmit={handleLoginUser} initialValues={initialValues}>

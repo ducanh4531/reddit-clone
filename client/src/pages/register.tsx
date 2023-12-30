@@ -4,12 +4,11 @@ import { Form, Formik, FormikHelpers } from 'formik'
 import { useRouter } from 'next/navigation'
 import InputField from '../components/InputField'
 import Wrapper from '../components/Wrapper'
-import { graphql } from '../gql'
-import { RegisterInput } from '../gql/graphql'
+import { FragmentType, useFragment } from '../gql'
+import { FieldError, RegisterInput } from '../gql/graphql'
+import { UserMutationResponseFragment } from '../graphql-client/fragments/userMutationResponse'
+import { registerMutationDocument } from '../graphql-client/mutations/register'
 import { mapFieldErrors } from '../helpers/mapFieldErrors'
-
-// prettier-ignore
-const registerMutation = graphql(`mutation Register($registerInput: RegisterInput!) {\n  register(registerInput: $registerInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}`)
 
 const Register = () => {
 	const initialValues = {
@@ -18,24 +17,37 @@ const Register = () => {
 		password: ''
 	}
 
-	const [registerUser, { loading: _registerUserLoading, data, error }] =
-		useMutation(registerMutation)
 	const router = useRouter()
+	const [registerUser, { loading: _registerUserLoading, data, error }] =
+		useMutation(registerMutationDocument)
+	const registerResponse = useFragment(
+		UserMutationResponseFragment,
+		data?.register as FragmentType<typeof UserMutationResponseFragment>
+	)
 
 	const handleRegisterUser = async (
 		values: RegisterInput,
 		actions: FormikHelpers<RegisterInput>
 	) => {
-		const response = await registerUser({
+		const { data: dataRegister } = await registerUser({
 			variables: { registerInput: values }
 		})
 
-		console.log('RESPONSE', response)
+		const registerResponse = useFragment(
+			UserMutationResponseFragment,
+			dataRegister?.register as FragmentType<
+				typeof UserMutationResponseFragment
+			>
+		)
 
-		if (response.data?.register.errors) {
+		console.log('RESPONSE', registerResponse)
+
+		if (registerResponse.errors) {
 			console.log('ERROR OCCURRED')
-			actions.setErrors(mapFieldErrors(response.data.register.errors))
-		} else if (response.data?.register.user) {
+			actions.setErrors(
+				mapFieldErrors(registerResponse.errors as Array<FieldError>)
+			)
+		} else if (registerResponse.user) {
 			router.push('/')
 			actions.resetForm()
 		}
@@ -43,8 +55,8 @@ const Register = () => {
 
 	return (
 		<Wrapper>
-			{error && <p>Failed to register</p>}
-			{data && data.register.success && (
+			{error && <p>Failed to register. Internal server error</p>}
+			{registerResponse && registerResponse.success && (
 				<p>Registered successfully {JSON.stringify(data)}</p>
 			)}
 			<Formik onSubmit={handleRegisterUser} initialValues={initialValues}>

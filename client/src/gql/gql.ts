@@ -13,8 +13,11 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "mutation Login($loginInput: LoginInput!) {\n  login(loginInput: $loginInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}": types.LoginDocument,
-    "mutation Register($registerInput: RegisterInput!) {\n  register(registerInput: $registerInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}": types.RegisterDocument,
+    "\n\tfragment FieldError on FieldError {\n\t\tfield\n\t\tmessage\n\t}\n": types.FieldErrorFragmentDoc,
+    "\n\tfragment UserInfo on User {\n\t\tid\n\t\tusername\n\t\temail\n\t}\n": types.UserInfoFragmentDoc,
+    "\n\tfragment UserMutationResponse on UserMutationResponse {\n\t\tcode\n\t\tsuccess\n\t\tmessage\n\t\tuser {\n\t\t\t...UserInfo\n\t\t}\n\t\terrors {\n\t\t\t...FieldError\n\t\t}\n\t}\n": types.UserMutationResponseFragmentDoc,
+    "\n\tmutation Login($loginInput: LoginInput!) {\n\t\tlogin(loginInput: $loginInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n": types.LoginDocument,
+    "\n\tmutation Register($registerInput: RegisterInput!) {\n\t\tregister(registerInput: $registerInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n": types.RegisterDocument,
 };
 
 /**
@@ -34,11 +37,23 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "mutation Login($loginInput: LoginInput!) {\n  login(loginInput: $loginInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}"): (typeof documents)["mutation Login($loginInput: LoginInput!) {\n  login(loginInput: $loginInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}"];
+export function graphql(source: "\n\tfragment FieldError on FieldError {\n\t\tfield\n\t\tmessage\n\t}\n"): (typeof documents)["\n\tfragment FieldError on FieldError {\n\t\tfield\n\t\tmessage\n\t}\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "mutation Register($registerInput: RegisterInput!) {\n  register(registerInput: $registerInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}"): (typeof documents)["mutation Register($registerInput: RegisterInput!) {\n  register(registerInput: $registerInput) {\n    code\n    success\n    message\n    user {\n      id\n      username\n      email\n    }\n    errors {\n      field\n      message\n    }\n  }\n}"];
+export function graphql(source: "\n\tfragment UserInfo on User {\n\t\tid\n\t\tusername\n\t\temail\n\t}\n"): (typeof documents)["\n\tfragment UserInfo on User {\n\t\tid\n\t\tusername\n\t\temail\n\t}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tfragment UserMutationResponse on UserMutationResponse {\n\t\tcode\n\t\tsuccess\n\t\tmessage\n\t\tuser {\n\t\t\t...UserInfo\n\t\t}\n\t\terrors {\n\t\t\t...FieldError\n\t\t}\n\t}\n"): (typeof documents)["\n\tfragment UserMutationResponse on UserMutationResponse {\n\t\tcode\n\t\tsuccess\n\t\tmessage\n\t\tuser {\n\t\t\t...UserInfo\n\t\t}\n\t\terrors {\n\t\t\t...FieldError\n\t\t}\n\t}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation Login($loginInput: LoginInput!) {\n\t\tlogin(loginInput: $loginInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n"): (typeof documents)["\n\tmutation Login($loginInput: LoginInput!) {\n\t\tlogin(loginInput: $loginInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tmutation Register($registerInput: RegisterInput!) {\n\t\tregister(registerInput: $registerInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n"): (typeof documents)["\n\tmutation Register($registerInput: RegisterInput!) {\n\t\tregister(registerInput: $registerInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
