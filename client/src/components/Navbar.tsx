@@ -1,7 +1,24 @@
+import { useMutation, useQuery } from '@apollo/client'
 import { Link } from '@chakra-ui/next-js'
-import { Box, Flex, Heading } from '@chakra-ui/react'
+import { Box, Button, Flex, Heading } from '@chakra-ui/react'
+import { useRouter } from 'next/navigation'
+import { logoutMutationDocument } from '../graphql-client/mutations/logout'
+import { meQueryDocument } from '../graphql-client/queries/me'
 
 let Navbar = () => {
+	const router = useRouter()
+	const { data: dataMe, loading } = useQuery(meQueryDocument)
+	const [logoutUser] = useMutation(logoutMutationDocument)
+
+	const handleLogout = () => {
+		router.push('/login')
+		logoutUser()
+	}
+
+	if (loading) {
+		return null
+	}
+
 	return (
 		<>
 			<Box bg={'tan'} p={4}>
@@ -15,22 +32,25 @@ let Navbar = () => {
 						<Heading>Reddit</Heading>
 					</Link>
 					<Box>
-						<Link href='/login' _hover={{ textDecoration: 'none' }}>
-							Login
-						</Link>
-						<Link
-							href='/register'
-							m={2}
-							_hover={{ textDecoration: 'none' }}
-						>
-							Register
-						</Link>
-						<Link
-							href='/logout'
-							_hover={{ textDecoration: 'none' }}
-						>
-							Logout
-						</Link>
+						{!dataMe?.me ? (
+							<>
+								<Link
+									href='/login'
+									_hover={{ textDecoration: 'none' }}
+								>
+									Login
+								</Link>
+								<Link
+									href='/register'
+									m={2}
+									_hover={{ textDecoration: 'none' }}
+								>
+									Register
+								</Link>
+							</>
+						) : (
+							<Button onClick={handleLogout}>Logout</Button>
+						)}
 					</Box>
 				</Flex>
 			</Box>

@@ -18,11 +18,15 @@ const Register = () => {
 	}
 
 	const router = useRouter()
-	const [registerUser, { loading: _registerUserLoading, data, error }] =
-		useMutation(registerMutationDocument)
+	const [
+		registerUser,
+		{ loading: _registerUserLoading, data: dataRegister, error }
+	] = useMutation(registerMutationDocument)
 	const registerResponse = useFragment(
 		UserMutationResponseFragment,
-		data?.register as FragmentType<typeof UserMutationResponseFragment>
+		dataRegister?.register as FragmentType<
+			typeof UserMutationResponseFragment
+		>
 	)
 
 	const handleRegisterUser = async (
@@ -57,7 +61,7 @@ const Register = () => {
 		<Wrapper>
 			{error && <p>Failed to register. Internal server error</p>}
 			{registerResponse && registerResponse.success && (
-				<p>Registered successfully {JSON.stringify(data)}</p>
+				<p>Registered successfully {JSON.stringify(dataRegister)}</p>
 			)}
 			<Formik onSubmit={handleRegisterUser} initialValues={initialValues}>
 				{({ handleSubmit, isSubmitting }) => (

@@ -17,7 +17,9 @@ const documents = {
     "\n\tfragment UserInfo on User {\n\t\tid\n\t\tusername\n\t\temail\n\t}\n": types.UserInfoFragmentDoc,
     "\n\tfragment UserMutationResponse on UserMutationResponse {\n\t\tcode\n\t\tsuccess\n\t\tmessage\n\t\tuser {\n\t\t\t...UserInfo\n\t\t}\n\t\terrors {\n\t\t\t...FieldError\n\t\t}\n\t}\n": types.UserMutationResponseFragmentDoc,
     "\n\tmutation Login($loginInput: LoginInput!) {\n\t\tlogin(loginInput: $loginInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n": types.LoginDocument,
+    "\n\tmutation Logout {\n\t\tlogout\n\t}\n": types.LogoutDocument,
     "\n\tmutation Register($registerInput: RegisterInput!) {\n\t\tregister(registerInput: $registerInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n": types.RegisterDocument,
+    "\n\tquery Me {\n\t\tme {\n\t\t\t...UserInfo\n\t\t}\n\t}\n": types.MeDocument,
 };
 
 /**
@@ -53,7 +55,15 @@ export function graphql(source: "\n\tmutation Login($loginInput: LoginInput!) {\
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n\tmutation Logout {\n\t\tlogout\n\t}\n"): (typeof documents)["\n\tmutation Logout {\n\t\tlogout\n\t}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n\tmutation Register($registerInput: RegisterInput!) {\n\t\tregister(registerInput: $registerInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n"): (typeof documents)["\n\tmutation Register($registerInput: RegisterInput!) {\n\t\tregister(registerInput: $registerInput) {\n\t\t\t...UserMutationResponse\n\t\t}\n\t}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n\tquery Me {\n\t\tme {\n\t\t\t...UserInfo\n\t\t}\n\t}\n"): (typeof documents)["\n\tquery Me {\n\t\tme {\n\t\t\t...UserInfo\n\t\t}\n\t}\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

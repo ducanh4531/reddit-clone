@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import InputField from '../components/InputField'
 import Wrapper from '../components/Wrapper'
 import { FragmentType, useFragment } from '../gql'
-import { FieldError, LoginInput } from '../gql/graphql'
+import { FieldError, LoginInput, MeQuery } from '../gql/graphql'
 import { UserMutationResponseFragment } from '../graphql-client/fragments/userMutationResponse'
 import { loginMutationDocument } from '../graphql-client/mutations/login'
+import { meQueryDocument } from '../graphql-client/queries/me'
 import { mapFieldErrors } from '../helpers/mapFieldErrors'
 
 const Login = () => {
@@ -17,11 +18,27 @@ const Login = () => {
 	}
 
 	const router = useRouter()
-	const [loginUser, { loading: _loginUserLoading, data, error }] =
-		useMutation(loginMutationDocument)
+	const [loginUser, { loading: _loginUserLoading, data: dataLogin, error }] =
+		useMutation(loginMutationDocument, {
+			update: (cache, { data: dataLogin }) => {
+				const loginResponse = useFragment(
+					UserMutationResponseFragment,
+					dataLogin?.login as FragmentType<
+						typeof UserMutationResponseFragment
+					>
+				)
+
+				if (loginResponse.success) {
+					cache.writeQuery<MeQuery>({
+						query: meQueryDocument,
+						data: { me: loginResponse.user }
+					})
+				}
+			}
+		})
 	const loginResponse = useFragment(
 		UserMutationResponseFragment,
-		data?.login as FragmentType<typeof UserMutationResponseFragment>
+		dataLogin?.login as FragmentType<typeof UserMutationResponseFragment>
 	)
 
 	const handleLoginUser = async (
@@ -56,7 +73,7 @@ const Login = () => {
 		<Wrapper>
 			{error && <p>Failed to login. Internal server error</p>}
 			{loginResponse && loginResponse.success && (
-				<p>Logged in successfully {JSON.stringify(data)}</p>
+				<p>Logged in successfully {JSON.stringify(dataLogin)}</p>
 			)}
 			<Formik onSubmit={handleLoginUser} initialValues={initialValues}>
 				{({ handleSubmit, isSubmitting }) => (
