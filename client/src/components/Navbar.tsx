@@ -2,20 +2,33 @@ import { useMutation, useQuery } from '@apollo/client'
 import { Link } from '@chakra-ui/next-js'
 import { Box, Button, Flex, Heading } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
+import { MeQuery } from '../gql/graphql'
 import { logoutMutationDocument } from '../graphql-client/mutations/logout'
 import { meQueryDocument } from '../graphql-client/queries/me'
 
 let Navbar = () => {
 	const router = useRouter()
-	const { data: dataMe, loading } = useQuery(meQueryDocument)
-	const [logoutUser] = useMutation(logoutMutationDocument)
+	const { data: dataMe, loading: loadingMe } = useQuery(meQueryDocument)
+	const [logoutUser, { loading: loadingLogout }] = useMutation(
+		logoutMutationDocument,
+		{
+			update: (cache, { data: dataLogout }) => {
+				if (dataLogout?.logout.valueOf()) {
+					cache.writeQuery<MeQuery>({
+						query: meQueryDocument,
+						data: { me: null }
+					})
+				}
+			}
+		}
+	)
 
 	const handleLogout = () => {
 		router.push('/login')
 		logoutUser()
 	}
 
-	if (loading) {
+	if (loadingMe) {
 		return null
 	}
 
@@ -49,7 +62,12 @@ let Navbar = () => {
 								</Link>
 							</>
 						) : (
-							<Button onClick={handleLogout}>Logout</Button>
+							<Button
+								onClick={handleLogout}
+								isLoading={loadingLogout}
+							>
+								Logout
+							</Button>
 						)}
 					</Box>
 				</Flex>
